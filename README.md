@@ -1,10 +1,12 @@
 # ceu_product-analytics
 
+The project involves answering questions around Product analytics topics such as Acquisition, Activity and Retention.
+
 **Datasets:**
 
 * Based on a real SaaS product subsampled and simplified for the task 
 
-* Twodatasets 
+* Two datasets 
 
   * *registrations.csv*: unique users with basic demographics
   
@@ -26,9 +28,9 @@
   
   * *operating_system*: Windows, Mac, Linux, Unknown
   
-  * About 40K records
+* About 40K records
   
-  * Each record is a unique registered user
+* Each record is a unique registered user
   
 **Activity data**
 
@@ -46,8 +48,8 @@
   
     * Registration data joined to the activity records as convenience
   
-  * About 79K activity events
+* About 79K activity events
   
-    * One record represents an active user in a specific month
+  * One record represents an active user in a specific month
     
-    * It means a user is active in two months on average (long tail distribution)
+  * It means a user is active in two months on average (long tail distribution)
