@@ -22,8 +22,123 @@ knitr::opts_chunk$set(
 )
 ```
 
+
 ```{r libraries, results = 'hide'}
 rm(list = ls())
+options(digits = 3)
+options(scipen = 999)
 library(dplyr)
 library(ggplot2)
+library(data.table)
+library(ggthemes)
+custom_theme <- theme_tufte() +
+  theme(legend.position = c(0.9, 0.9),
+        legend.title = element_text(face = "italic", size = 12),
+        axis.title = element_text(face = "bold", size = 14))
+
 ```
+
+
+```{r import}
+data <- fread('data/activity.csv')
+```
+
+
+## Acquisition
+
+First, let's see the number of registrations in each month of the product life-cycle.
+
+```{r acquisition_b1}
+data %>%
+  group_by(registration_month) %>% 
+  summarize(count = n_distinct(id)) %>% 
+  ggplot(aes(x = registration_month, y = count, fill = ifelse(registration_month <= 12, 1, 2))) +
+  geom_col(show.legend = FALSE) +
+  ggtitle('Figure 1: number of registrations per month') +
+  custom_theme
+```
+
+\# <add summary of plot here> \#
+
+To dig deeper into the data, we can see the year-over-year growth of registrations 
+
+```{r acquisition_t1a}
+
+```
+
+\# <add year-over-year explanation, projection for month22 here> \#
+
+```{r acquisition_t1b}
+
+```
+
+\# <add regional difference explanation in registration here> \#
+
+## Activity
+
+```{r activity_b2}
+data %>%
+  group_by(activity_month) %>% 
+  summarize(count = n()) %>% 
+  ggplot(aes(x = activity_month, y = count, fill = ifelse(activity_month <= 12, 1, 2))) +
+  geom_col(show.legend = FALSE) +
+  ggtitle('Figure 3: number of active users per month') +
+  custom_theme
+```
+
+\# <add summary of plot here> \#
+
+
+```{r activity_t2a}
+
+```
+
+\# <add summary of plot here> \#
+
+```{r activity_t2b}
+
+```
+
+\# <add summary of plot here> \#
+
+## Retention
+
+```{r retention_b1}
+registered_month_1 <- data %>%
+  filter(registration_month == 1) %>% 
+  summarize(count = n_distinct(id))
+
+activity_month_2 <- data %>% 
+  filter(registration_month == 1 & activity_month == 2) %>% 
+  summarize(count = n())
+
+retention_rate_1_2 <- paste0(round(activity_month_2[[1]] / registered_month_1[[1]], 4) * 100, '%')
+retention_rate_1_2
+```
+
+
+```{r retention_b2}
+registered_month_13 <- data %>%
+  filter(registration_month == 13) %>% 
+  summarize(count = n_distinct(id))
+
+activity_month_14 <- data %>% 
+  filter(registration_month == 13 & activity_month == 14) %>% 
+  summarize(count = n())
+
+retention_rate_13_14 <- paste0(round(activity_month_14[[1]] / registered_month_13[[1]], 4) * 100, '%')
+retention_rate_13_14
+```
+
+\# <add difference explanation here> \#
+
+
+```{r retention_t3a}
+
+```
+
+
+```{r retention_t3b}
+
+```
+
