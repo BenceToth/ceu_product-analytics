@@ -1,0 +1,29 @@
+---
+title: "Mastering Product Analytics - Final Assignment"
+author: "Bence L. Toth (166504)"
+date: "June 3rd, 2019"
+output: html_document
+---
+
+<style>
+body {
+text-align: justify}
+</style>
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(
+  warning = FALSE,
+  error = FALSE,
+  echo = TRUE,
+  message = FALSE,
+  fig.align = 'center',
+  fig.height = 3.75,
+  fig.width = 6
+)
+```
+
+```{r libraries, results = 'hide'}
+rm(list = ls())
+library(dplyr)
+library(ggplot2)
+```
