@@ -22,14 +22,18 @@ knitr::opts_chunk$set(
 )
 ```
 
+This analysis is based on the concepts of the book [Lean Analytics: Use Data Analytics to Build a Better Startup Faster](leananalyticsbook.com) by Alistair Croll and Benjamin Yoskovitz. It aims to carry out a simple data exploration regarding the topics of Acquisition, Activity and Retention, three key lifecycle stages of a product, according to the book.
 
 ```{r libraries, results = 'hide'}
 rm(list = ls())
 options(digits = 3)
 options(scipen = 999)
 library(dplyr)
+library(tidyr)
 library(ggplot2)
+library(fpp2)
 library(data.table)
+library(kableExtra)
 library(ggthemes)
 custom_theme <- theme_tufte() +
   theme(legend.position = c(0.9, 0.9),
@@ -38,15 +42,26 @@ custom_theme <- theme_tufte() +
 
 ```
 
+## About the data
 
 ```{r import}
 data <- fread('data/activity.csv')
 ```
 
+The example is based on a real Software as a Service, subscription based product. There are two datasets available:
+
+* *registrations.csv*: unique users with basic demographics
+
+* *activity.csv*: which users have been active in which month
+
+More information about the datasets can be accessed on the project's [GitHub repository](https://github.com/BenceToth/ceu_product-analytics).
 
 ## Acquisition
 
-First, let's see the number of registrations in each month of the product life-cycle.
+Acquisition is a stage where you should generate attention through a variety of means, both organic and inorganic.
+Relevant metrics to assess acquisition include traffic, mentions, cost per click, search results, cost of acquisition, open rate etc.
+
+As a first step in the analysis, let's see the number of registrations in each month:
 
 ```{r acquisition_b1}
 data %>%
@@ -58,21 +73,90 @@ data %>%
   custom_theme
 ```
 
-\# <add summary of plot here> \#
 
-To dig deeper into the data, we can see the year-over-year growth of registrations 
+```{r acquisition_b2, echo = FALSE}
+regs <- data %>% 
+  mutate(year = ifelse(registration_month <= 12, 1, 2)) %>% 
+  group_by(year) %>% 
+  summarize(regs = n_distinct(id))
 
-```{r acquisition_t1a}
+drop <- data %>% 
+  filter(registration_month %in% c(17, 18)) %>% 
+  group_by(registration_month) %>% 
+  summarize(regs = n_distinct(id))
 
+drop <- round(drop[[1, 2]]/drop[[2, 2]] - 1, 4) * 100
 ```
 
-\# <add year-over-year explanation, projection for month22 here> \#
+We can see that year 2 has an overall lower number of registrations (`r regs[[1, 2]]` vs. `r regs[[2, 2]]`).
+In the first year, most registrations occurred during the autumn/early winter period (September - November). We have no information on when this product was released to the market, the lower periods in the first half of year 1 might resemble the early adaptors, and the spike in the second part could be a successfull marketing campaign. After some lows during the cristmas holidays, there is a second peak until May of year 2, then a sudden, `r drop`% drop in registrations. This might be a failed product update, decrease in market reach or other reasons.
+
+To dig deeper into the data, we can see the year-over-year growth of registrations:
+
+```{r acquisition_t1a_1}
+# add year and month
+data <- data %>% 
+  mutate(year = ifelse(registration_month <= 12, 1, 2),
+         reg_month = ifelse(registration_month <= 12, registration_month, registration_month - 12))
+
+# summarize registration number by year and month
+yoyg <- data %>%   
+  select(id, year, reg_month) %>% 
+  group_by(reg_month, year) %>% 
+  summarize(n_distinct(id)) %>% 
+  rename(regs = 'n_distinct(id)') %>% 
+  # get year-over-year growth
+  spread(year, regs) %>% 
+  rename(year_1 = '1',
+         year_2 = '2') %>% 
+  mutate(yoyg = year_2 / year_1) %>% 
+  select(reg_month, yoyg) %>% 
+  filter(reg_month <= 10)
+
+yoyg$reg_month <- as.factor(yoyg$reg_month)
+
+kable(yoyg, caption = 'Table 1: Year on Year Growth of registrations') %>%
+  kable_styling('striped', full_width = F, position = 'center') %>%
+  row_spec(0, color = 'white', background = 'orange', align ='c')
+```
+
+The next plot shows the growth rates for each month, together with the Naive forecast of Month 22 (October of the second year):
+
+```{r acquisition_t1a_2}
+ts <- ts(data = yoyg$yoyg, frequency = 1, start = 1, end = 9)
+fc <- naive(ts, h = 1)
+
+plot(fc, main = 'Figure 2: Year-on-year growth & Forecast from Naive method')
+```
+
+The year-over-year data seems to be decreasing, but keeping higher number of registrations in year 2 up until September. The Naive forecast for October is `r fc$mean[1]`.
+
+We can investigate if there are any differences in registration numbers based on geographic regions:
 
 ```{r acquisition_t1b}
+regions <- data %>%   
+  select(id, year, reg_month, region) %>% 
+  group_by(region, reg_month, year) %>% 
+  summarize(n_distinct(id)) %>% 
+  rename(regs = 'n_distinct(id)') %>% 
+  # get year-over-year growth
+  spread(year, regs) %>% 
+  rename(year_1 = '1',
+         year_2 = '2') %>% 
+  mutate(yoyg = year_2 / year_1) %>% 
+  select(region, reg_month, yoyg) %>% 
+  filter(reg_month < 10)
 
+regions$reg_month <- as.factor(regions$reg_month)
+
+ggplot(data = regions, aes(x = reg_month, y = yoyg, col = region)) +
+  geom_line(size = 1.5) +
+  ggtitle('Figure 3: Region differences in year-on-year growth') +
+  geom_smooth(method = 'lm', se = FALSE, linetype = 'dashed') +
+  custom_theme
 ```
 
-\# <add regional difference explanation in registration here> \#
+Comparing the regions, there seems to be a regional change. *America* underperforms both EMEA and the rest of the world, except in the beginning of the year. All show a decreasing trend in registration numbers, but the *ROW* region seems to produce the highest growths. It is likely to drive future growth in registrations, while EMEA, and especially America might have different interest in the product, or they were less affected by the marketing campaigns.
 
 ## Activity
 
