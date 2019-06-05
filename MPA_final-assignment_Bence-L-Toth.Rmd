@@ -117,7 +117,7 @@ yoyg$reg_month <- as.factor(yoyg$reg_month)
 
 kable(yoyg, caption = 'Table 1: Year on Year Growth of registrations') %>%
   kable_styling('striped', full_width = F, position = 'center') %>%
-  row_spec(0, color = 'white', background = 'orange', align ='c')
+  row_spec(0, color = 'white', background = 'blue', align ='c')
 ```
 
 The next plot shows the growth rates for each month, together with the Naive forecast of Month 22 (October of the second year):
@@ -147,8 +147,6 @@ regions <- data %>%
   select(region, reg_month, yoyg) %>% 
   filter(reg_month < 10)
 
-regions$reg_month <- as.factor(regions$reg_month)
-
 ggplot(data = regions, aes(x = reg_month, y = yoyg, col = region)) +
   geom_line(size = 1.5) +
   ggtitle('Figure 3: Region differences in year-on-year growth') +
@@ -160,24 +158,35 @@ Comparing the regions, there seems to be a regional change. *America* underperfo
 
 ## Activity
 
+Activation is turning the resulting drive-by visitors into users who are somehow enrolled. It can be done by tracking a specific activity milestone, such as enrollments, signups, completed onboarding process, used the service at least once, subscriptions etc.
+
+The plot below shows the number of active users in each month:
+
 ```{r activity_b2}
 data %>%
   group_by(activity_month) %>% 
   summarize(count = n()) %>% 
   ggplot(aes(x = activity_month, y = count, fill = ifelse(activity_month <= 12, 1, 2))) +
   geom_col(show.legend = FALSE) +
-  ggtitle('Figure 3: number of active users per month') +
+  ggtitle('Figure 4: number of active users per month') +
   custom_theme
 ```
 
-\# <add summary of plot here> \#
+The number of users increased until the summer of the first year, then it dropped, and only returned to the May level in September. It peaked during November, decreased during christmas and winter. The second year had its highest number of active users between March and May, and again decreased for the summer, showing a seasonality trait.
 
+As we seen, the region of *America* struggles with new registrations. Let's see the percentage of *America* among active users in each month:
 
 ```{r activity_t2a}
-
+data %>%
+  group_by(region, activity_month) %>% 
+  summarize(count = n()) %>% 
+  ggplot(aes(x = activity_month, y = count, fill = ifelse(region == 'America', 1, 2))) +
+  geom_bar(position = 'fill', stat = 'identity', show.legend = FALSE) +
+  ggtitle('Figure 5: number of active users per month') +
+  custom_theme 
 ```
 
-\# <add summary of plot here> \#
+We can see that the number of users from *America* is on average between 17-22%. The company has to think about investing in other ways to drive the *American* market, or focus on the rest of their clients which seem to have better registration and activity rates.
 
 ```{r activity_t2b}
 
@@ -186,6 +195,10 @@ data %>%
 \# <add summary of plot here> \#
 
 ## Retention
+
+The main task during the Retention phase is to convince users to come back repeatedly, exhibiting sticky behavior. It can be tracked by metrics such as engagement, time since last visit, daily and monthly active use, churns etc.
+
+In the case of our example, we can calculate the second month retention rate (registered users in Month 1 who have been active in Month 2).
 
 ```{r retention_b1}
 registered_month_1 <- data %>%
@@ -197,9 +210,11 @@ activity_month_2 <- data %>%
   summarize(count = n())
 
 retention_rate_1_2 <- paste0(round(activity_month_2[[1]] / registered_month_1[[1]], 4) * 100, '%')
-retention_rate_1_2
 ```
 
+The second month retention rate is `r retention_rate_1_2`. It can be considered pretty good, it usually ranges from 20% to 60%.
+
+Let's see the the same metric for year two (between Month 13 and 14).
 
 ```{r retention_b2}
 registered_month_13 <- data %>%
@@ -211,10 +226,10 @@ activity_month_14 <- data %>%
   summarize(count = n())
 
 retention_rate_13_14 <- paste0(round(activity_month_14[[1]] / registered_month_13[[1]], 4) * 100, '%')
-retention_rate_13_14
 ```
 
-\# <add difference explanation here> \#
+`r retention_rate_13_14` of users who registered in January, second year are active in February. It is still an acceptable value, but what could be behind the 10% drop since last year?
+It can be because the majority of users who are interested in the product have already signed up, so the pool of potential interested users for new registrations became smaller. This way the users who joined in the second year were not that engaged in the product and decided to opt out of it in the upcoming month with a higher percentage.
 
 
 ```{r retention_t3a}
