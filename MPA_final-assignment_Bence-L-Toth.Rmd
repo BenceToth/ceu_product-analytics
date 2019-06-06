@@ -1,7 +1,7 @@
 ---
 title: "Mastering Product Analytics - Final Assignment"
 author: "Bence L. Toth (166504)"
-date: "June 3rd, 2019"
+date: "June 6th, 2019"
 output: html_document
 ---
 
@@ -32,6 +32,7 @@ library(dplyr)
 library(tidyr)
 library(ggplot2)
 library(fpp2)
+library(DataCombine)
 library(data.table)
 library(kableExtra)
 library(ggthemes)
@@ -58,8 +59,7 @@ More information about the datasets can be accessed on the project's [GitHub rep
 
 ## Acquisition
 
-Acquisition is a stage where you should generate attention through a variety of means, both organic and inorganic.
-Relevant metrics to assess acquisition include traffic, mentions, cost per click, search results, cost of acquisition, open rate etc.
+*"Acquisition is a stage where you should generate attention through a variety of means, both organic and inorganic. Relevant metrics to assess acquisition include traffic, mentions, cost per click, search results, cost of acquisition, open rate etc."*
 
 As a first step in the analysis, let's see the number of registrations in each month:
 
@@ -88,8 +88,8 @@ drop <- data %>%
 drop <- round(drop[[1, 2]]/drop[[2, 2]] - 1, 4) * 100
 ```
 
-We can see that year 2 has an overall lower number of registrations (`r regs[[1, 2]]` vs. `r regs[[2, 2]]`).
-In the first year, most registrations occurred during the autumn/early winter period (September - November). We have no information on when this product was released to the market, the lower periods in the first half of year 1 might resemble the early adaptors, and the spike in the second part could be a successfull marketing campaign. After some lows during the cristmas holidays, there is a second peak until May of year 2, then a sudden, `r drop`% drop in registrations. This might be a failed product update, decrease in market reach or other reasons.
+We can see that year 2 has a lower number of registrations overall (`r regs[[1, 2]]` vs. `r regs[[2, 2]]`).
+In the first year, most registrations occurred during the autumn/early winter period (September - November). We have no information on when this product was released to the market, the lower periods in the first half of year 1 might resemble the early adaptors, and the spike in the second part could be a successful marketing campaign. After some lows during the cristmas holidays, there is a second peak until May of year 2, then a sudden, `r drop`% drop in registrations. This might be a failed product update, decrease in market reach or other circumstances.
 
 To dig deeper into the data, we can see the year-over-year growth of registrations:
 
@@ -126,7 +126,7 @@ The next plot shows the growth rates for each month, together with the Naive for
 ts <- ts(data = yoyg$yoyg, frequency = 1, start = 1, end = 9)
 fc <- naive(ts, h = 1)
 
-plot(fc, main = 'Figure 2: Year-on-year growth & Forecast from Naive method')
+plot(fc, main = 'Figure 2: Year-on-year growth & Naive Forecast')
 ```
 
 The year-over-year data seems to be decreasing, but keeping higher number of registrations in year 2 up until September. The Naive forecast for October is `r fc$mean[1]`.
@@ -154,11 +154,11 @@ ggplot(data = regions, aes(x = reg_month, y = yoyg, col = region)) +
   custom_theme
 ```
 
-Comparing the regions, there seems to be a regional change. *America* underperforms both EMEA and the rest of the world, except in the beginning of the year. All show a decreasing trend in registration numbers, but the *ROW* region seems to produce the highest growths. It is likely to drive future growth in registrations, while EMEA, and especially America might have different interest in the product, or they were less affected by the marketing campaigns.
+Comparing the regions, there seems to be a difference. *America* underperforms both *EMEA* and the rest of the world, except in the beginning of year 1. All show a decreasing trend in registration numbers, but the *ROW* region seems to produce the highest growth. It is likely to drive future growth in registrations, while *EMEA*, and especially *America* might have different interest in the product, or they were less affected by the marketing campaigns.
 
 ## Activity
 
-Activation is turning the resulting drive-by visitors into users who are somehow enrolled. It can be done by tracking a specific activity milestone, such as enrollments, signups, completed onboarding process, used the service at least once, subscriptions etc.
+*"Activation is turning the resulting drive-by visitors into users who are somehow enrolled. It can be done by tracking a specific activity milestone, such as enrollments, signups, completed onboarding process, used the service at least once, subscriptions etc."*
 
 The plot below shows the number of active users in each month:
 
@@ -172,7 +172,7 @@ data %>%
   custom_theme
 ```
 
-The number of users increased until the summer of the first year, then it dropped, and only returned to the May level in September. It peaked during November, decreased during christmas and winter. The second year had its highest number of active users between March and May, and again decreased for the summer, showing a seasonality trait.
+The number of users increased until the summer of the first year, then it dropped, and only returned to the May level in September. It peaked during November and decreased during christmas and winter. The second year had its highest number of active users between March and May, and again decreased for the summer, showing a seasonality trait.
 
 As we seen, the region of *America* struggles with new registrations. Let's see the percentage of *America* among active users in each month:
 
@@ -186,17 +186,49 @@ data %>%
   custom_theme 
 ```
 
-We can see that the number of users from *America* is on average between 17-22%. The company has to think about investing in other ways to drive the *American* market, or focus on the rest of their clients which seem to have better registration and activity rates.
+We can see that the number of users from *America* is on average between 17-22%. The company has to think about investing in other ways to drive that market, or focus on the rest of their clients which seem to have better registration and activity rates.
 
-```{r activity_t2b}
+It is worth it to also take a look at the users' activity patterns.
+The users can be classified as *New* (registered that month), *Retained* (was active the previous month as well) or *Resurrected* (was inactive the previous month and not *New*).
 
+```{r activity_t2b_1}
+data_slide <- slide(data = data, Var = 'activity_month', TimeVar = 'activity_month',
+                             GroupVar = 'id', NewVar = 'prev_activity', slideBy = -1,
+                             keepInvalid = FALSE, reminder = TRUE)
+
+data_slide <- data_slide %>%
+  mutate(class = ifelse(activity_month == registration_month, 'New', ifelse(activity_month - 1 != prev_activity | is.na(prev_activity), 'Resurrected', 'Retained')))
 ```
 
-\# <add summary of plot here> \#
+To illustrate this, take a look at a random user's activity history:
+
+```{r activity_t2b_2}
+data_slide %>% 
+  filter(id == 'id_30809') %>% 
+  select(id, activity_month, registration_month, class) %>% 
+  kable(caption = 'Table 2: User activity history') %>%
+  kable_styling('striped', full_width = F, position = 'center') %>%
+  row_spec(0, color = 'white', background = 'blue', align ='c')
+```
+
+This user registered in July, kept using the service in August, then did not perform any activity in September. He returned in November and was active in December as well. He did not use the product in the second year.
+
+Let's now look at the number of *Retained* active users in each month:
+
+```{r activity_t2b_3}
+data_slide %>%
+  filter(class == 'Retained') %>% 
+  group_by(activity_month) %>% 
+  summarize(count = n()) %>% 
+  ggplot(aes(x = activity_month, y = count, fill = ifelse(activity_month <= 12, 1, 2))) +
+  geom_col(show.legend = FALSE) +
+  ggtitle('Figure 6: number of Retained users per month') +
+  custom_theme
+```
 
 ## Retention
 
-The main task during the Retention phase is to convince users to come back repeatedly, exhibiting sticky behavior. It can be tracked by metrics such as engagement, time since last visit, daily and monthly active use, churns etc.
+The main task during the Retention phase is to *"convince users to come back repeatedly, exhibiting sticky behavior. It can be tracked by metrics such as engagement, time since last visit, daily and monthly active use, churns etc."*
 
 In the case of our example, we can calculate the second month retention rate (registered users in Month 1 who have been active in Month 2).
 
@@ -228,16 +260,35 @@ activity_month_14 <- data %>%
 retention_rate_13_14 <- paste0(round(activity_month_14[[1]] / registered_month_13[[1]], 4) * 100, '%')
 ```
 
-`r retention_rate_13_14` of users who registered in January, second year are active in February. It is still an acceptable value, but what could be behind the 10% drop since last year?
-It can be because the majority of users who are interested in the product have already signed up, so the pool of potential interested users for new registrations became smaller. This way the users who joined in the second year were not that engaged in the product and decided to opt out of it in the upcoming month with a higher percentage.
+`r retention_rate_13_14` of users who registered in January, second year were active in February. It is still an acceptable value, but what could be behind the 10% drop since last year?
+It can be because the majority of users who are interested in the product have already signed up, so the pool of potential interested users for new registrations became smaller. This way, the users who joined in the second year were not that engaged in the product and decided to opt out of it in the upcoming month with a higher percentage.
 
-
-```{r retention_t3a}
-
-```
-
+We can also calculate the second month retention rate based on the operating systems of the users:
 
 ```{r retention_t3b}
+opsys_month_1 <- data %>%
+  filter(registration_month == 1) %>% 
+  group_by(operating_system) %>% 
+  summarize(reg_count = n_distinct(id))
 
+opsys_month_2 <- data %>% 
+  filter(registration_month == 1 & activity_month == 2) %>%
+  group_by(operating_system) %>% 
+  summarize(active_count = n())
+
+opsys_retention_rate <- left_join(opsys_month_1, opsys_month_2, by = 'operating_system') %>% 
+  mutate(opsys_retention = round(active_count / reg_count, 4) * 100)
+
+kable(opsys_retention_rate, caption = 'Table 3: Second month retention rate by Operating System') %>%
+  kable_styling('striped', full_width = F, position = 'center') %>%
+  row_spec(0, color = 'white', background = 'blue', align ='c')
 ```
 
+For *Unknown* operating systems, the retention rate is way lower (38%) than for *Mac* users (61.5%). One action is to investigate the data collection process and define which operating systems these users are actually using. There is a significant, 20% difference between *Mac* and *Linux* users as well. This might signal that the product is not that optimized for *Linux* as it is for *Mac*.
+
+## Conclusion
+
+With this basic introduction to different product analytics practices, we could see how little effort and some programming knowledge could lead to interesting hypotheses about user behaviour. Methods such as A/B testing could be applied to test these hypotheses, for example: how optimizing the Linux version of the product will influence retention rates, which regions should be targeted with specific advertising campaings etc.
+
+This project was done as a requirement for the Mastering Product Analytics course at Central European University in Hungary.
+The R code along with the dataset can be found my [ceu_product-analytics](https://github.com/BenceToth/ceu_product-analytics) repository on GitHub.
