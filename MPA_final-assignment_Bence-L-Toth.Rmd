@@ -89,7 +89,7 @@ drop <- round(drop[[1, 2]]/drop[[2, 2]] - 1, 4) * 100
 ```
 
 We can see that year 2 has a lower number of registrations overall (`r regs[[1, 2]]` vs. `r regs[[2, 2]]`).
-In the first year, most registrations occurred during the autumn/early winter period (September - November). We have no information on when this product was released to the market, the lower periods in the first half of year 1 might resemble the early adaptors, and the spike in the second part could be a successful marketing campaign. After some lows during the cristmas holidays, there is a second peak until May of year 2, then a sudden, `r drop`% drop in registrations. This might be a failed product update, decrease in market reach or other circumstances.
+In the first year, most registrations occurred during the autumn/early winter period (September - November). We have no information on when this product was released to the market, the lower periods in the first half of year 1 might resemble the early adaptors, and the spike in the second part could be a successful marketing campaign. After some lows during the Christmas holidays, there is a second peak until May of year 2, then a sudden, `r drop`% drop in registrations. This might be a failed product update, decrease in market reach or other circumstances.
 
 To dig deeper into the data, we can see the year-over-year growth of registrations:
 
@@ -172,7 +172,7 @@ data %>%
   custom_theme
 ```
 
-The number of users increased until the summer of the first year, then it dropped, and only returned to the May level in September. It peaked during November and decreased during christmas and winter. The second year had its highest number of active users between March and May, and again decreased for the summer, showing a seasonality trait.
+The number of users increased until the summer of the first year, then it dropped, and only returned to the May level in September. It peaked during November and decreased during Christmas and winter. The second year had its highest number of active users between March and May, and again decreased for the summer, showing a seasonality trait.
 
 As we seen, the region of *America* struggles with new registrations. Let's see the percentage of *America* among active users in each month:
 
@@ -200,7 +200,7 @@ data_slide <- data_slide %>%
   mutate(class = ifelse(activity_month == registration_month, 'New', ifelse(activity_month - 1 != prev_activity | is.na(prev_activity), 'Resurrected', 'Retained')))
 ```
 
-To illustrate this, take a look at a random user's activity history:
+To illustrate this, take a look at a randomly chosen user's activity history:
 
 ```{r activity_t2b_2}
 data_slide %>% 
@@ -246,7 +246,7 @@ retention_rate_1_2 <- paste0(round(activity_month_2[[1]] / registered_month_1[[1
 
 The second month retention rate is `r retention_rate_1_2`. It can be considered pretty good, it usually ranges from 20% to 60%.
 
-Let's see the the same metric for year two (between Month 13 and 14).
+Let's see the same metric for year two (between Month 13 and 14).
 
 ```{r retention_b2}
 registered_month_13 <- data %>%
@@ -288,7 +288,7 @@ For *Unknown* operating systems, the retention rate is way lower (38%) than for 
 
 ## Conclusion
 
-With this basic introduction to different product analytics practices, we could see how little effort and some programming knowledge could lead to interesting hypotheses about user behaviour. Methods such as A/B testing could be applied to test these hypotheses, for example: how optimizing the Linux version of the product will influence retention rates, which regions should be targeted with specific advertising campaings etc.
+With this basic introduction to different product analytics practices, we could see how little effort and some programming knowledge could lead to interesting hypotheses about user behavior. Methods such as A/B testing could be applied to test these hypotheses, for example: how optimizing the Linux version of the product will influence retention rates, which regions should be targeted with specific advertising campaigns etc.
 
 This project was done as a requirement for the Mastering Product Analytics course at Central European University in Hungary.
 The R code along with the dataset can be found my [ceu_product-analytics](https://github.com/BenceToth/ceu_product-analytics) repository on GitHub.
