@@ -3,7 +3,7 @@
 The project involves answering questions around Product analytics topics such as Acquisition, Activity and Retention.
 Done as a requisite of the Mastering Product Analytics course at Central European University in Hungary. Medium.com article can be found on https://medium.com/@bencetth/product-analytics-65812e82b2c2
 
-**Datasets:**
+## Datasets
 
 * Based on a real SaaS product subsampled and simplified for the task 
 
