@@ -5,13 +5,13 @@ Done as a requisite of the Mastering Product Analytics course at Central Europea
 
 ## Datasets
 
-* Based on a real SaaS product subsampled and simplified for the task 
+Based on a real SaaS product subsampled and simplified for the task 
 
-* Two datasets 
+Two datasets 
 
-  * *registrations.csv*: unique users with basic demographics
+* *registrations.csv*: unique users with basic demographics
   
-  * *activity.csv*: which users have been active in which month
+* *activity.csv*: which users have been active in which month
   
 **Registration data**
 
