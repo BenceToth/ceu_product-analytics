@@ -1,7 +1,9 @@
 # ceu_product-analytics
 
 The project involves answering questions around Product analytics topics such as Acquisition, Activity and Retention.
-Done as a requisite of the Mastering Product Analytics course at Central European University in Hungary. Medium.com article can be found on https://medium.com/@bencetth/product-analytics-65812e82b2c2
+Done as a requisite of the Mastering Product Analytics course at Central European University in Hungary. 
+
+Article can be found on [Medium.com](https://medium.com/@bencetth/product-analytics-65812e82b2c2?source=friends_link&sk=9eb4c2189b2cc7e95ceea5624f05632c)
 
 ## Datasets
 
